@@ -1,0 +1,24 @@
+# Maven build output
+target/
+
+# IDE files
+.idea/
+*.iws
+*.ipr
+.settings/
+.metadata/
+.loadpath
+.recommenders
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Uploaded images (don't commit user content)
+src/main/webapp/uploads/*
+!src/main/webapp/uploads/.gitkeep
+
+# Log files
+*.log
+logs/

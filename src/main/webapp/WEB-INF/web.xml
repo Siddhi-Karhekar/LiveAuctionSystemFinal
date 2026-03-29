@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    web.xml — Deployment descriptor for Live Auction Bidding System
+    Servlet 3.1 / Tomcat 9+
+-->
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+  <display-name>Live Auction Bidding System</display-name>
+
+  <!-- ── Default Welcome Page ──────────────────────────────────────────── -->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <!-- ── Session Configuration ─────────────────────────────────────────── -->
+  <session-config>
+    <session-timeout>30</session-timeout>  <!-- 30 minutes -->
+  </session-config>
+
+  <!-- ── Error Pages ────────────────────────────────────────────────────── -->
+  <error-page>
+    <error-code>404</error-code>
+    <location>/jsp/error404.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>500</error-code>
+    <location>/jsp/error500.jsp</location>
+  </error-page>
+
+  <!-- ── Servlet Declarations (annotation-driven; listed here for clarity) -->
+  <!--
+    All servlets use @WebServlet annotations in their source files.
+    No manual servlet-mapping needed for Servlet 3.0+ projects.
+    Listed below for documentation only:
+
+    /auth       → servlet.AuthenticationServlet
+    /item       → servlet.ItemServlet     (@MultipartConfig for file upload)
+    /auction    → servlet.AuctionServlet
+    /bid        → servlet.BidServlet
+    /seller     → servlet.SellerServlet
+    /buyer      → servlet.BuyerServlet
+    Filter:       servlet.SessionFilter   (guards /auction, /bid, /seller, /item, /buyer)
+  -->
+
+  <!-- ── Character Encoding Filter ────────────────────────────────────── -->
+  <filter>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>ignore</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+</web-app>
