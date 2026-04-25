@@ -22,3 +22,12 @@ src/main/webapp/uploads/*
 # Log files
 *.log
 logs/
+
+# Node
+node_modules/
+
+# Word temp lock files
+~$*
+
+# Local Claude Code settings (machine-specific paths)
+.claude/settings.local.json

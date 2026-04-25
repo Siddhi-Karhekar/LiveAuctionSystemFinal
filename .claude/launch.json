@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Tomcat via Maven Plugin",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": ["tomcat7:run"],
+      "port": 9090
+    },
+    {
+      "name": "Tomcat Standalone (SmartTomcat)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "%CATALINA_HOME%\\bin\\startup.bat"],
+      "port": 8080
+    }
+  ]
+}

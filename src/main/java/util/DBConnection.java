@@ -14,7 +14,7 @@ public class DBConnection {
     // ── Database configuration ────────────────────────────────────────────────
     private static final String DB_URL      = "jdbc:mysql://localhost:3306/live_auction_db?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true";
     private static final String DB_USER     = "root";
-    private static final String DB_PASSWORD = "root123";
+    private static final String DB_PASSWORD = "1234";
     private static final String DRIVER      = "com.mysql.cj.jdbc.Driver";
 
     /** Obtain a fresh JDBC connection. Caller is responsible for closing it. */
