@@ -1,19 +1,34 @@
 # Maven build output
 target/
 
-# IDE files
-.idea/
-*.iws
-*.ipr
+# IDE files (Eclipse)
+.classpath
+.project
 .settings/
 .metadata/
 .loadpath
 .recommenders
 .cache/
+*.iws
+*.ipr
+
+# IDE files (IntelliJ)
+.idea/
+*.iml
+
+# IntelliJ SmartTomcat plugin runtime config
+.smarttomcat/
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Sensitive configuration — never commit real credentials
+db.properties
+*.env
+.env
+.env.*
+!.env.example
 
 # Uploaded images (don't commit user content)
 src/main/webapp/uploads/*

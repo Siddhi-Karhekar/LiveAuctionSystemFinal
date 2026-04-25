@@ -1,33 +1,44 @@
 package util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
-/**
- * DBConnection - Provides a shared MySQL JDBC connection.
- * Uses singleton-style connection pooling via a single static connection.
- * For production, replace with a proper connection pool (e.g., HikariCP or DBCP).
- */
 public class DBConnection {
 
-    // ── Database configuration ────────────────────────────────────────────────
-    private static final String DB_URL      = "jdbc:mysql://localhost:3306/live_auction_db?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true";
-    private static final String DB_USER     = "root";
-    private static final String DB_PASSWORD = "1234";
-    private static final String DRIVER      = "com.mysql.cj.jdbc.Driver";
+    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final Properties props = loadProperties();
 
-    /** Obtain a fresh JDBC connection. Caller is responsible for closing it. */
+    private static Properties loadProperties() {
+        Properties p = new Properties();
+        try (InputStream in = DBConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (in == null) {
+                throw new RuntimeException("db.properties not found on classpath. " +
+                    "Copy src/main/resources/db.properties.example to db.properties and fill in your credentials.");
+            }
+            p.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load db.properties: " + e.getMessage(), e);
+        }
+        return p;
+    }
+
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName(DRIVER);
         } catch (ClassNotFoundException e) {
             throw new SQLException("MySQL JDBC Driver not found: " + e.getMessage());
         }
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        return DriverManager.getConnection(
+            props.getProperty("db.url"),
+            props.getProperty("db.user"),
+            props.getProperty("db.password")
+        );
     }
 
-    /** Silently close a connection (null-safe). */
     public static void close(Connection conn) {
         if (conn != null) {
             try { conn.close(); } catch (SQLException ignored) {}
