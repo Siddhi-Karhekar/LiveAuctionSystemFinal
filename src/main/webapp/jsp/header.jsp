@@ -1,9 +1,17 @@
 <%-- ============================================================
      header.jsp — shared navbar included in every page
      ============================================================ --%>
-<%@ page import="model.User" %>
+<%@ page import="model.User, dao.NotificationDAO" %>
 <%
     User navUser = (User) session.getAttribute("loggedUser");
+    int unreadNotifications = 0;
+    if (navUser != null) {
+        try {
+            unreadNotifications = new NotificationDAO().countUnread(navUser.getId());
+        } catch (java.sql.SQLException ignored) {
+            // table may not exist yet — fail silently so the navbar still renders
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,6 +39,16 @@
         <% } else if (navUser.isBuyer()) { %>
           <a href="<%= request.getContextPath() %>/buyer?action=dashboard">My Bids</a>
         <% } %>
+
+        <a href="<%= request.getContextPath() %>/notification?action=list"
+           style="position:relative;text-decoration:none">
+          &#x1F514;
+          <% if (unreadNotifications > 0) { %>
+            <span style="position:absolute;top:-6px;right:-10px;background:#e74c3c;color:#fff;border-radius:10px;padding:1px 6px;font-size:.7rem;font-weight:700">
+              <%= unreadNotifications %>
+            </span>
+          <% } %>
+        </a>
 
         <span class="muted" style="font-size:.85rem">Hi, <%= navUser.getName().split(" ")[0] %></span>
         <a href="<%= request.getContextPath() %>/auth?action=logout" class="btn-nav">Logout</a>

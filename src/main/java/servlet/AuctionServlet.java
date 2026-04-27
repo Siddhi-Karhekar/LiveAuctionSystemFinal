@@ -2,9 +2,13 @@ package servlet;
 
 import dao.AuctionDAO;
 import dao.BidDAO;
+import dao.NotificationDAO;
 import model.Auction;
 import model.Bid;
+import model.Notification;
 import model.User;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,8 +33,9 @@ import java.util.List;
 @WebServlet("/auction")
 public class AuctionServlet extends HttpServlet {
 
-    private final AuctionDAO auctionDAO = new AuctionDAO();
-    private final BidDAO     bidDAO     = new BidDAO();
+    private final AuctionDAO      auctionDAO      = new AuctionDAO();
+    private final BidDAO          bidDAO          = new BidDAO();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
 
     // ── GET ───────────────────────────────────────────────────────────────────
 
@@ -150,7 +155,7 @@ public class AuctionServlet extends HttpServlet {
         }
     }
 
-    /** Seller picks the winning bid after auction ends. */
+    /** Seller picks the winning bid after auction ends. Generates win/loss notifications. */
     private void selectWinner(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -169,10 +174,50 @@ public class AuctionServlet extends HttpServlet {
             int bidderId    = Integer.parseInt(bidderIdStr);
             BigDecimal amount = new BigDecimal(amountStr);
 
-            auctionDAO.selectWinner(auctionId, bidderId, amount);
+            // Owner check — only the seller who owns the auction (or admin) may pick a winner
+            Auction auction = auctionDAO.findById(auctionId);
+            if (auction == null) { resp.sendError(404, "Auction not found"); return; }
+            if (!user.isAdmin() && auction.getItem().getSellerId() != user.getId()) {
+                resp.sendRedirect(req.getContextPath() + "/auction?action=list");
+                return;
+            }
+            if (auction.getWinnerId() != null) {
+                resp.sendRedirect(req.getContextPath() + "/auction?action=detail&id=" + auctionId);
+                return;
+            }
+
+            boolean ok = auctionDAO.selectWinner(auctionId, bidderId, amount);
+            if (ok) {
+                notifyBidders(auctionId, bidderId);
+            }
             resp.sendRedirect(req.getContextPath() + "/auction?action=detail&id=" + auctionId + "&msg=winner_set");
         } catch (Exception e) {
             throw new ServletException("Error selecting winner", e);
+        }
+    }
+
+    /**
+     * Insert one notification per unique bidder on this auction:
+     *   winner   → "You won the bid!"
+     *   others   → "You did not win the bid"
+     */
+    private void notifyBidders(int auctionId, int winnerId) throws java.sql.SQLException {
+        List<Bid> bids = bidDAO.findByAuction(auctionId);
+        Set<Integer> seen = new HashSet<>();
+        for (Bid b : bids) {
+            if (!seen.add(b.getBidderId())) continue; // one notification per user
+
+            Notification n = new Notification();
+            n.setUserId(b.getBidderId());
+            n.setAuctionId(auctionId);
+            if (b.getBidderId() == winnerId) {
+                n.setType("win");
+                n.setMessage("You won the bid!");
+            } else {
+                n.setType("loss");
+                n.setMessage("You did not win the bid");
+            }
+            notificationDAO.insert(n);
         }
     }
 

@@ -147,43 +147,7 @@
           <div class="alert alert-info" style="margin-top:16px">Sellers cannot place bids.</div>
         <% } %>
 
-        <% if (isEnded && !hasWinner && isOwner && bids != null && !bids.isEmpty()) { %>
-          <%
-            LinkedHashMap topBids = new LinkedHashMap();
-            for (int wi = 0; wi < bids.size(); wi++) {
-                Bid wb = (Bid) bids.get(wi);
-                Integer bidderKey = new Integer(wb.getBidderId());
-                if (!topBids.containsKey(bidderKey)) {
-                    topBids.put(bidderKey, wb);
-                }
-            }
-            Bid[] topBidArr = (Bid[]) topBids.values().toArray(new Bid[0]);
-          %>
-          <div style="margin-top:20px">
-            <h4 style="margin-bottom:12px;font-size:.95rem">Select Winning Bid</h4>
-            <form method="post" action="<%= request.getContextPath() %>/auction?action=selectWinner"
-                  onsubmit="return confirmAction('Confirm this winner selection?')">
-              <input type="hidden" name="auctionId" value="<%= auction.getId() %>">
-              <div class="form-group">
-                <label>Choose winner:</label>
-                <select name="bidderId" id="winnerSelect" required>
-                  <option value="">-- Pick a bidder --</option>
-                  <% for (int wi2 = 0; wi2 < topBidArr.length; wi2++) {
-                       Bid wb2 = topBidArr[wi2]; %>
-                    <option value="<%= wb2.getBidderId() %>" data-amount="<%= wb2.getBidAmount().toPlainString() %>">
-                      <%= wb2.getBidderName() %> -- &#8377;<%= String.format("%,.2f", wb2.getBidAmount()) %>
-                    </option>
-                  <% } %>
-                </select>
-              </div>
-              <input type="hidden" id="bidAmountHidden" name="bidAmount" value="">
-              <button type="submit" class="btn btn-primary btn-block"
-                      onclick="var sel=document.getElementById('winnerSelect');document.getElementById('bidAmountHidden').value=sel.options[sel.selectedIndex].getAttribute('data-amount');">
-                &#x1F3C6; Confirm Winner
-              </button>
-            </form>
-          </div>
-        <% } else if (isEnded && !hasWinner && isOwner && (bids == null || bids.isEmpty())) { %>
+        <% if (isEnded && !hasWinner && isOwner && (bids == null || bids.isEmpty())) { %>
           <div class="alert alert-info" style="margin-top:16px">No bids were placed on this auction.</div>
         <% } %>
 
@@ -194,6 +158,56 @@
       </div>
     </div>
   </div>
+
+  <%-- ── Seller's manual winner-selection panel ─────────────────────────── --%>
+  <% if (isEnded && !hasWinner && isOwner && bids != null && !bids.isEmpty()) {
+       LinkedHashMap topBids = new LinkedHashMap();
+       for (int wi = 0; wi < bids.size(); wi++) {
+           Bid wb = (Bid) bids.get(wi);
+           Integer bidderKey = new Integer(wb.getBidderId());
+           if (!topBids.containsKey(bidderKey)) {
+               topBids.put(bidderKey, wb);   // bids are pre-sorted by amount DESC, so first seen = highest
+           }
+       }
+       Bid[] topBidArr = (Bid[]) topBids.values().toArray(new Bid[0]);
+  %>
+    <div style="margin-bottom:40px;padding:24px;background:var(--surface);border:1px solid rgba(240,165,0,.3);border-radius:10px">
+      <h2 style="margin-bottom:8px;font-size:1.3rem">&#x1F3C6; Select the Winning Bidder</h2>
+      <p class="muted" style="margin-bottom:20px;font-size:.92rem">
+        The auction has ended. Review the bidders below and choose the winner.
+        The winner will be notified <strong>"You won the bid!"</strong> and the others
+        will receive <strong>"You did not win the bid"</strong>.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Bidder</th><th>Highest Bid</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <% for (int wi2 = 0; wi2 < topBidArr.length; wi2++) {
+                 Bid wb2 = topBidArr[wi2];
+            %>
+              <tr>
+                <td><% if (wi2 == 0) { %><span style="color:var(--gold)">&#x1F947;</span><% } else { %><%= wi2 + 1 %><% } %></td>
+                <td><strong><%= wb2.getBidderName() %></strong></td>
+                <td><span class="price-tag">&#8377;<%= String.format("%,.2f", wb2.getBidAmount()) %></span></td>
+                <td>
+                  <form method="post" action="<%= request.getContextPath() %>/auction?action=selectWinner"
+                        style="margin:0"
+                        onsubmit="return confirmAction('Select <%= wb2.getBidderName() %> as the winner of this auction?');">
+                    <input type="hidden" name="auctionId" value="<%= auction.getId() %>">
+                    <input type="hidden" name="bidderId"  value="<%= wb2.getBidderId() %>">
+                    <input type="hidden" name="bidAmount" value="<%= wb2.getBidAmount().toPlainString() %>">
+                    <button type="submit" class="btn btn-gold btn-sm">&#x1F3C6; Select as Winner</button>
+                  </form>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
 
   <% if (bids != null && !bids.isEmpty()) { %>
     <div style="margin-bottom:40px">

@@ -65,6 +65,22 @@ CREATE TABLE IF NOT EXISTS bids (
 );
 
 -- ----------------------------------------------------------------
+-- Table: notifications
+-- Win/loss notices generated when a seller selects a winner.
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS notifications (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT NOT NULL,
+    auction_id  INT NOT NULL,
+    type        ENUM('win','loss') NOT NULL,
+    message     VARCHAR(255) NOT NULL,
+    is_read     TINYINT(1) NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
+    FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE
+);
+
+-- ----------------------------------------------------------------
 -- Sample Data
 -- ----------------------------------------------------------------
 

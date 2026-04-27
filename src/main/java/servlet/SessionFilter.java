@@ -17,7 +17,7 @@ import java.io.IOException;
  * Protected:  /auction/*, /bid/*, /seller/*, /item/*
  * Public:     /auth/*, /css/*, /js/*, /uploads/*, *.jsp (login/register)
  */
-@WebFilter(urlPatterns = {"/auction", "/bid", "/seller", "/item"})
+@WebFilter(urlPatterns = {"/auction", "/bid", "/seller", "/item", "/buyer", "/notification"})
 public class SessionFilter implements Filter {
 
     @Override
